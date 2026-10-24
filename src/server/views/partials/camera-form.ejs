@@ -1,0 +1,188 @@
+<form id="camera-form">
+  
+  <div class="mb-3 row step" id="step1">
+    <% snapshotUrl = '' %>
+    <% if(snapshotUrl !== ''){ %>
+      <div class="col-4">
+        <img :src="snapshotUrl" alt="" id="snap">
+      </div>
+      <div class="col-8">
+    <% }else{ %>
+      <div class="col-12">
+    <% } %>
+      <label for="name" class="form-label">Nombre</label>
+      <input type="text" required class="form-control" id="name" name="name" placeholder="Enter name">
+    </div>
+
+  </div>
+  <div class="mb-3 row step" id="step2">
+    <div class="col-12 input-group">
+      <!-- <label for="hostnameInput" class="form-label">Host</label> -->
+      <input type="text" required class="form-control" id="hostname" placeholder="IP" title="Nombre de host / IP">
+      <!-- <label for="portInput" class="form-label">Puerto</label> -->
+      <input type="number" required class="form-control" id="port" placeholder="Puerto" title="Puerto" value="8899">
+      <div class="input-group-append">
+        <button class="btn btn-primary" id="discover">Buscar</button>
+      </div>
+    </div>
+    <div class="col-4">
+    </div>
+  </div>
+
+  <div class="mb-3 row step" id="step3">
+    <div class="col-12 input-group">
+      <!-- <label for="username" class="form-label">Usuario</label> -->
+      <input id="username" name="username" type="text" required class="form-control" placeholder="Enter username">
+      <!-- <label for="password" class="form-label">Contraseña</label> -->
+      <input id="password" name="password" type="password" required class="form-control" placeholder="Enter password">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card text-white bg-danger mb-3 w-100" id="error-container">
+        <div class="card-body">
+          <p class="card-text" id="error-message"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+
+      <div class="btn-group">
+        
+        <!-- v-if="currentStep > 1" -->
+        <button class="btn btn-secondary" id="prevStep">Anterior</button>
+        <!-- v-if="currentStep < 3" -->
+        <button class="btn btn-secondary" id="nextStep">Siguiente</button>
+        <!-- v-if="currentStep === 3" -->
+        
+      </div>
+      <div class="btn-group float-right">
+        <button type="submit" class="btn btn-primary" id="save">Guardar</button>
+        <button type="cancel" class="btn btn-secondary" id="cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<%- include('../partials/camera-modal',{
+  title: 'Buscar cámaras',
+  form: 'discover'
+}); %>
+
+<script>
+  $(document).ready(init_form)
+
+  var steps = 3;
+  var currentStep = 1;
+
+  function init_form() {
+    
+    goToStep(1);
+
+    $("#prevStep").on('click', function(e){
+      e.preventDefault();
+      if (currentStep > 1) {
+        goToStep(currentStep-1);
+      }
+    })
+
+    $("#nextStep").on('click', function(e){
+      e.preventDefault();
+      if (currentStep < steps) {
+        goToStep(currentStep+1);
+      }
+    })
+
+    $("#cancel").on('click', function(e){
+      e.preventDefault();
+      closeForm();
+    })
+
+    $("#save").on('click', function(e){
+      e.preventDefault();
+      submitForm()
+    })
+
+    $("#discover").on('click', function(e) {
+      e.preventDefault();
+      $("#discover-modal").show();
+      discoverDevices();
+    })
+  }
+
+  function submitForm() {
+    $("#error-container").hide();
+    var data = {
+      name: $("#name").val(),
+      hostname: $("#hostname").val(),
+      port: $("#port").val(),
+      username: $("#username").val(),
+      password: $("#password").val()
+    }
+    var url = '/api/camera';
+    if ($("#cameraId").length > 0) {
+      url += '/' + $("#cameraId").val();
+    }
+    $.ajax({
+      method: 'POST',
+      url: url,
+      data: data,
+      success: function (data) {
+        closeForm();
+      },
+      error: function (error) {
+        console.log('Error', error);
+        $("#error-container").show();
+        if(error.responseJSON && error.responseJSON.validationError){
+          $("#error-message").text(error.responseJSON.validationError);
+        } else {
+          $("#error-message").text(error.statusText);
+        }
+      }
+    })
+  }
+
+  function goToStep(step) {
+    currentStep = step;
+    $("#save").hide();
+    $(".step").hide();
+    $("#step"+step).show();
+    $("#error-container").hide();
+
+    if (step == 1) {
+      $("#prevStep").hide();
+      $("#nextStep").show();
+    } else if (step > 1 && step < steps){
+      $("#prevStep").show();
+      $("#nextStep").show();
+    }else if (step === steps) {
+      $("#nextStep").hide();
+      $("#save").show();
+    }
+  }
+
+  function closeForm() {
+    goToStep(1);
+    $("#name").val("")
+    $("#hostname").val("") 
+    $("#port").val("8899")
+    $("#username").val("") 
+    $("#password").val("")
+    $("#cameraId").remove();
+    $("#camera-form").closest('.modal').hide();
+  }
+
+  function setCameraFormData (data) {
+    $("#name").val(data.name)
+    $("#hostname").val(data.hostname) 
+    $("#port").val(data.port)
+    $("#username").val(data.username) 
+    $("#password").val(data.password)
+    var $idInput = $('<input type="hidden" value="'+data.id+'" name="id" id="cameraId" />')
+    $("#camera-form").append($idInput);
+  }
+</script>

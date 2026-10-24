@@ -1,0 +1,112 @@
+<div id="sidebar">
+  <ul class="nav nav-pills nav-pills-cams flex-column mb-auto">
+    <% if(typeof cameras !== 'undefined' && cameras.length > 0) { %>
+      <% cameras.forEach(function(cam, i) { %>
+        <li class="nav-item nav-item-cam">
+          <a href="/app/camera/<%= cam.id %>" class="nav-link" id="nav-cam-<%= cam.id %>">
+            <div class="nav-item-thumbnail"></div>
+            <div class="nav-item-description">
+              <p class="fs-5 my-0 cam-name"><%= cam.name %></p>
+            </div>
+          </a>
+        </li>
+      <% }); %>
+    <% } %>
+  </ul>
+
+  <select class="form-control camera-select" v-model="activeCamera" @change="goToCamera">
+    <option value="">Todas</option>
+    <% if(typeof cameras !== 'undefined' && cameras.length > 0) { %>
+    <% cameras.forEach(function(cam) { %>
+      <option value="<%= cam.id %>"><%= cam.name %></option>
+    <% }); %>
+    <% } %>
+  </select>
+
+</div>
+<!-- <a href="#" class="btn btn-primary pull-right" id="createCamera" title="Agregar cámara">+</a> -->
+
+<%- include('../partials/camera-modal', {
+  title: 'Crear cámara',
+  form: 'camera'
+}); %>
+
+<script>
+
+var cameras = JSON.parse('<%- JSON.stringify(cameras) %>');
+
+$(function(){
+  init_sidebar();
+})
+
+function init_sidebar() {
+  reloadSidebarCameras(cameras);
+  $('#createCamera').on('click', createCameraHandler)
+  $('.deleteCamera').on('click', deleteCameraHandler)
+  $('.editCamera').on('click', editCameraHandler)
+  $(document).on('click', function(e){
+    if ($(e.target).attr('id') !== 'cam-menu-btn') {
+      $('body').removeClass('opened')
+    }
+  })
+}
+
+function reloadSidebarCameras (cameras) {
+  var self = this;
+  var millis = new Date().getTime();
+  cameras.forEach(function(cam) {
+    $("#nav-cam-" + cam.id + ' .cam-name').html(cam.name + '<br><small>' + cam.hostname + '<small>')
+    if (cam.onvifData) {
+      $("#nav-cam-" + cam.id).addClass('connected')
+      $("#nav-cam-" + cam.id + ' .nav-item-thumbnail').css('background-image', 'url('+cam.onvifData.snapUri+'&d='+millis+')')
+    } else {
+      $("#nav-cam-" + cam.id).remove('connected')
+    }
+  });
+  setTimeout(function () {
+    reloadSidebarCameras(cameras)
+  }, 60000)
+}
+
+function editCameraHandler(e){
+  e.preventDefault()
+  var camI = $(this).attr('href');
+  var camera = cameras[camI];
+  // setCameraFormData(camera);
+  setTimeout(function () {
+    $("#name").val(camera.name)
+    $("#hostname").val(camera.hostname) 
+    $("#port").val(camera.port)
+    $("#username").val(camera.username) 
+    $("#password").val(camera.password)
+    var $idInput = $('<input type="hidden" value="'+camera.id+'" name="id" id="cameraId" />')
+    $("#camera-form").append($idInput);
+    $('#camera-modal').show()
+  }, 200)
+}
+function deleteCameraHandler(e) {
+  e.preventDefault();
+  var r = confirm('Eliminar cámara?')
+  if(!r) {
+    return false;
+  }
+  $.ajax({
+    method: 'DELETE',
+    url: '/api/camera/' + $(this).attr('href'),
+    success: function(response) {
+      window.location = '/app'
+    },
+    error: function(error) {
+      alert('Error al eliminar')
+      console.log('Error al eliminar')
+      console.log(error)
+    }
+  })
+}
+function createCameraHandler(e) {
+  e.preventDefault();
+  $('#camera-modal').show()
+  console.log('CREAR')
+}
+
+</script>

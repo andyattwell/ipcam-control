@@ -1,0 +1,9 @@
+node_modules
+server/node_modules
+dist_electron
+dist
+db
+src/server/daemon
+
+package-lock.json
+.env

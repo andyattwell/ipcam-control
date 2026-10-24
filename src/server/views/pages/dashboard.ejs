@@ -1,0 +1,18 @@
+<div class="row" id="dashboard">
+  <% cameras.forEach(function(cam, i) { %>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <div id="camera-<%= cam.id %>"></div>
+    </div>
+  <% }); %>
+</div>
+<script src="/js/ipcam.js"></script>
+<!-- <script src="/js/ipcamPlayer.js"></script> -->
+<script src="/js/dashboard.js"></script> 
+<script>
+  // var ipcamAPI = new Ipcam();
+  var cameras = JSON.parse('<%- JSON.stringify(cameras) %>');
+  
+  $(function () {
+    var dashboard = new Dashboard('cameras-container', cameras);
+  })
+</script>

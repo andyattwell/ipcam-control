@@ -1,0 +1,59 @@
+
+<div class="row" id="camera-page">
+  <div class="col-sm-12 col-lg-9" id="camera-<%= camera.id %>">
+    <!-- <div class="panel panel-default panel-camera">
+      <div class="panel-heading">
+        <h3><%= camera.name %> 
+          <button class="btn btn-primary btn-sm pull-right">
+            <span class="glyphicon glyphicon-refresh"></span>
+          </button> 
+          <span class="pull-right"><%= camera.connectionStatus ? 'Conectada' : 'Desconectada' %> </span>
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div id="cam-player-<%= camera.id %>">
+          <img id="player-image" src="" alt="Camera still image">
+        </div>
+      </div>
+    </div> -->
+  </div>
+
+  <!-- <div class="col-xs-12 col-lg-3">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-xs-12 col-sm-6 col-lg-12">
+            <p>
+              Estado: <%= camera.connectionStatus ? 'Conectada' : 'Desconectada' %>
+              <% if (camera.onvifData && camera.onvifData.status) { %>
+              <span class="badge connection-status" class="connected"></span>
+              <% }else{ %>
+                <span class="badge connection-status" class="disconnected"></span>
+              <% } %>
+            </p>
+
+            <label for="hostname">Hostname:</label>
+            <input class="form-control form-control-sm" disabled type="text" name="hostname" value="<%= camera.hostname %>:<%= camera.port %>">
+
+            <% if (camera.onvifData){ %>
+              <label for="SnapUri">Snap Uri:</label>
+              <input class="form-control form-control-sm" disabled type="text" name="SnapUri" value="<%= camera.onvifData.snapUri %>">
+              <label for="SnapUri">RTSP Uri:</label>
+              <input class="form-control form-control-sm" disabled type="text" name="streamUrl" value="<%= camera.onvifData.streamUrl %>">
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+</div>
+  <script>
+    var camera = JSON.parse('<%- JSON.stringify(camera) %>');
+    $(document).ready(function() {
+      var ipCam = new Ipcam("camera-"+camera.id, camera)
+      .init()
+      .initPlayer()
+      .initPtz();
+    })
+
+  </script>

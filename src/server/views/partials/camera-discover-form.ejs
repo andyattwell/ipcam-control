@@ -1,0 +1,69 @@
+<table v-if="discoverDevices.length" class="table table-sm table-hover table-dark" id="devices-table">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Ip</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<script>
+
+var devices = [
+  {
+    name: 'Test 1',
+    connected: true,
+    ip: '123.433.231.123'
+
+  },
+  {
+    name: 'Test 2',
+    connected: false,
+    ip: '433.23.123.33'
+
+  }
+]
+
+function discoverDevices() {
+
+  $.ajax({
+    method: 'GET',
+    url: '/api/discover',
+    success: function(response) {
+      devices = response;
+      var $table = $('#devices-table');
+      devices.forEach(function(device){
+        var $tr = $("<tr>");
+        var $name = $("<td>").text(device.connected ? "Connected" : device.name)
+        var $ip = $("<td>").text(device.ip)
+        var $connect = $("<td>")
+          if (!device.connected) {
+            $btn = $("<a>")
+                .addClass("btn btn-sm btn-primary")
+                .text("Conectar")
+                .on('click', function(e) {
+                  e.preventDefault();
+                  $("#hostname").val(device.ip);
+                  $("#discover-modal").hide();
+                })
+            $connect.append($btn)
+          }
+
+          $tr.append($name)
+          $tr.append($ip)
+          $tr.append($connect)
+          $table.append($tr)
+      });
+    },
+    error: function(error) {
+      console.log(error)
+    }
+  })
+}
+
+$(document).ready(function () {
+  // discoverDevices();
+})
+</script>
